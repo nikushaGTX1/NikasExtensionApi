@@ -4,9 +4,20 @@ namespace ExtensionApi.Services;
 
 public static class PhotoOrderNormalizer
 {
-    private static readonly HashSet<string> AvoidCover = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly IReadOnlyDictionary<string, int> CategoryOrder =
+        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
     {
-        "bathroom", "toilet", "hallway", "utility", "detail", "other"
+        ["living_room"] = 0,
+        ["bedroom"] = 1,
+        ["kitchen"] = 2,
+        ["balcony_view"] = 3,
+        ["exterior"] = 4,
+        ["hallway"] = 4,
+        ["utility"] = 4,
+        ["detail"] = 4,
+        ["other"] = 4,
+        ["bathroom"] = 5,
+        ["toilet"] = 5
     };
 
     public static PhotoOrderResponse Normalize(GeminiPhotoOrder result, int imageCount)
@@ -21,19 +32,26 @@ public static class PhotoOrderNormalizer
             .Where(item => item.Index >= 0 && item.Index < imageCount)
             .GroupBy(item => item.Index)
             .ToDictionary(group => group.Key, group => group.First());
-        var cover = order.FirstOrDefault(index => assessments.TryGetValue(index, out var item) && IsSafeCover(item), -1);
-        if (cover >= 0 && order[0] != cover)
-        {
-            order.Remove(cover);
-            order.Insert(0, cover);
-        }
+        var modelPosition = order.Select((index, position) => (index, position))
+            .ToDictionary(item => item.index, item => item.position);
+        order = order
+            .OrderBy(index => assessments.TryGetValue(index, out var item) ? CategoryRank(item.Category) : 4)
+            .ThenBy(index => assessments.TryGetValue(index, out var item) && item.IsDuplicate ? 1 : 0)
+            .ThenBy(index => assessments.TryGetValue(index, out var item) && item.IsBlurry ? 1 : 0)
+            .ThenByDescending(index => assessments.TryGetValue(index, out var item) ? item.QualityScore : -1)
+            .ThenBy(index => modelPosition[index])
+            .ThenBy(index => index)
+            .ToList();
 
         var category = assessments.TryGetValue(order[0], out var selected)
             ? selected.Category ?? "unknown"
             : result.CoverCategory ?? "unknown";
-        return new PhotoOrderResponse(order, category);
+        var images = order.Select(index => assessments.TryGetValue(index, out var item)
+            ? new PhotoImageResult(index, item.Category ?? "other", Math.Clamp(item.QualityScore, 0, 100), item.IsDuplicate, item.IsBlurry)
+            : new PhotoImageResult(index, "other", 0, false, false)).ToArray();
+        return new PhotoOrderResponse(order, category, images);
     }
 
-    private static bool IsSafeCover(GeminiImageAssessment image) =>
-        !image.IsBlurry && !image.IsDuplicate && !AvoidCover.Contains(image.Category ?? "other");
+    private static int CategoryRank(string? category) =>
+        CategoryOrder.TryGetValue(category ?? "other", out var rank) ? rank : 4;
 }

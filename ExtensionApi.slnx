@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ExtensionApi.Tests/ExtensionApi.Tests.csproj" />
+  <Project Path="ExtensionApi/ExtensionApi.csproj" />
+</Solution>

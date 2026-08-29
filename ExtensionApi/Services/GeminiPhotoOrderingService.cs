@@ -100,11 +100,14 @@ public sealed class GeminiPhotoOrderingService(
     }
 
     private static string BuildPrompt(int count) => $"""
-        Rank these {count} real-estate listing images. Return every image index exactly once.
-        Choose the best cover first: a bright, sharp, wide living room is ideal, followed by a strong exterior,
-        bedroom, kitchen, or balcony/view. Never put a bathroom, toilet, hallway, utility/detail shot, blurry
-        image, or duplicate first when any suitable alternative exists. Keep useful room variety and place weak
-        or duplicate images last. Classify every image and score visual quality from 0 to 100. Do not invent facts.
+        Classify these {count} real-estate listing images and return every image index exactly once.
+        The required category sequence is strict: all living-room images first, then all bedrooms, then all
+        kitchens, then all balconies/views, then exterior/other/detail/hallway/utility images, and finally all
+        bathrooms and toilets. Treat an open-plan living/dining room as living_room. Do not classify a balcony
+        door or window seen from inside as balcony_view unless the photo is primarily of the balcony or its view.
+        Within each category put sharp, bright, wide, non-duplicate photos before weak or duplicate photos.
+        Classify every image and score visual quality from 0 to 100. Do not invent facts. The server will enforce
+        the category sequence from your classifications even if orderedIndexes is imperfect.
         """;
 
     private static object ResponseSchema(int count) => new

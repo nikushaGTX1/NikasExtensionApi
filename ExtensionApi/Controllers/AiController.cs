@@ -15,10 +15,11 @@ public sealed class AiController(
     IStreetCheckingService streetCheckingService,
     ILogger<AiController> logger) : ControllerBase
 {
-    /// <summary>Ranks listing photos and chooses a non-bathroom cover when a suitable alternative exists.</summary>
+    /// <summary>Classifies listing photos and enforces the configured real-estate room sequence.</summary>
     /// <remarks>
     /// Accepts 2–20 public HTTPS image URLs. Images are analyzed but are not persisted. The response contains
-    /// every source index exactly once. Clients should retain their original order if this endpoint fails.
+    /// every source index exactly once in this order: living rooms, bedrooms, kitchens, balconies/views,
+    /// other/exterior images, then bathrooms/toilets. Clients should retain their original order if this endpoint fails.
     /// </remarks>
     [HttpPost("photo-order", Name = "OrderListingPhotos")]
     [ProducesResponseType<PhotoOrderResponse>(StatusCodes.Status200OK)]
