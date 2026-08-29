@@ -1,0 +1,37 @@
+@ExtensionApi_HostAddress = http://localhost:5115
+@ExtensionApiKey = replace-with-your-extension-access-key
+
+GET {{ExtensionApi_HostAddress}}/health
+Accept: application/json
+
+###
+
+POST {{ExtensionApi_HostAddress}}/api/Ai/photo-order
+Content-Type: application/json
+X-Extension-Key: {{ExtensionApiKey}}
+
+{
+  "sourceUrl": "https://www.myhome.ge/udzravi-qoneba/example-25766570/",
+  "listingId": "25766570",
+  "imageUrls": [
+    "https://static-statements.tnet.ge/example-0.webp",
+    "https://static-statements.tnet.ge/example-1.webp"
+  ]
+}
+
+###
+
+POST {{ExtensionApi_HostAddress}}/api/Ai/street-check
+Content-Type: application/json
+X-Extension-Key: {{ExtensionApiKey}}
+
+{
+  "site": "myhome",
+  "sourceStreet": "ი. ჭავჭავაძის გამზ.",
+  "address": "ი. ჭავჭავაძის გამზ. 12",
+  "district": "ვაკე",
+  "candidates": [
+    { "index": 0, "label": "ილია ჭავჭავაძის გამზირი", "matcherScore": 88 },
+    { "index": 1, "label": "ალექსანდრე ჭავჭავაძის ქუჩა", "matcherScore": 86 }
+  ]
+}

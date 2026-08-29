@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ExtensionApi</name>
+    </assembly>
+    <members>
+        <member name="M:ExtensionApi.Controllers.AiController.OrderPhotos(ExtensionApi.Models.PhotoOrderRequest,System.Threading.CancellationToken)">
+            <summary>Ranks listing photos and chooses a non-bathroom cover when a suitable alternative exists.</summary>
+            <remarks>
+            Accepts 2–20 public HTTPS image URLs. Images are analyzed but are not persisted. The response contains
+            every source index exactly once. Clients should retain their original order if this endpoint fails.
+            </remarks>
+        </member>
+        <member name="M:ExtensionApi.Controllers.AiController.CheckStreet(ExtensionApi.Models.StreetCheckRequest,System.Threading.CancellationToken)">
+            <summary>Chooses a street only from the supplied MyHome or SS.ge catalog candidates.</summary>
+            <remarks>
+            This is a fallback for unresolved or ambiguous catalog matches. It never returns an invented label:
+            selectedLabel is copied server-side from the submitted candidate list. Confidence below 80 returns no match.
+            </remarks>
+        </member>
+    </members>
+</doc>
